@@ -131,10 +131,10 @@
     return self;
 }
 
-- (void)presentLeftMenuViewController
+- (void)presentLeftMenuViewController:(BOOL)animated
 {
     [self presentMenuViewContainerWithMenuViewController:self.leftMenuViewController];
-    [self showLeftMenuViewController];
+    [self showLeftMenuViewController:animated];
 }
 
 - (void)presentRightMenuViewController
@@ -269,7 +269,7 @@
     }
 }
 
-- (void)showLeftMenuViewController
+- (void)showLeftMenuViewController:(BOOL)animated
 {
     if (!self.leftMenuViewController) {
         return;
@@ -282,36 +282,41 @@
     [self updateContentViewShadow];
     [self resetContentViewScale];
     
-    [UIView animateWithDuration:self.animationDuration animations:^{
-        if (self.scaleContentView) {
-            self.contentViewContainer.transform = CGAffineTransformMakeScale(self.contentViewScaleValue, self.contentViewScaleValue);
-        } else {
-            self.contentViewContainer.transform = CGAffineTransformIdentity;
-        }
+    
+    if (animated) {
         
-        if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_7_1) {
-            self.contentViewContainer.center = CGPointMake((UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation]) ? self.contentViewInLandscapeOffsetCenterX + CGRectGetWidth(self.view.frame) : self.contentViewInPortraitOffsetCenterX + CGRectGetWidth(self.view.frame)), self.contentViewContainer.center.y);
-        } else {
-            self.contentViewContainer.center = CGPointMake((UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation]) ? self.contentViewInLandscapeOffsetCenterX + CGRectGetHeight(self.view.frame) : self.contentViewInPortraitOffsetCenterX + CGRectGetWidth(self.view.frame)), self.contentViewContainer.center.y);
-        }
-
-        self.menuViewContainer.alpha = !self.fadeMenuView ?: 1.0f;
-        self.contentViewContainer.alpha = self.contentViewFadeOutAlpha;
-        self.menuViewContainer.transform = CGAffineTransformIdentity;
-        if (self.scaleBackgroundImageView)
-            self.backgroundImageView.transform = CGAffineTransformIdentity;
+        [UIView animateWithDuration:self.animationDuration animations:^{
+            if (self.scaleContentView) {
+                self.contentViewContainer.transform = CGAffineTransformMakeScale(self.contentViewScaleValue, self.contentViewScaleValue);
+            } else {
+                self.contentViewContainer.transform = CGAffineTransformIdentity;
+            }
             
-    } completion:^(BOOL finished) {
-        [self addContentViewControllerMotionEffects];
-        [self.leftMenuViewController endAppearanceTransition];
-        
-        if (!self.visible && [self.delegate conformsToProtocol:@protocol(RESideMenuDelegate)] && [self.delegate respondsToSelector:@selector(sideMenu:didShowMenuViewController:)]) {
-            [self.delegate sideMenu:self didShowMenuViewController:self.leftMenuViewController];
-        }
-        
-        self.visible = YES;
-        self.leftMenuVisible = YES;
-    }];
+            if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_7_1) {
+                self.contentViewContainer.center = CGPointMake((UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation]) ? self.contentViewInLandscapeOffsetCenterX + CGRectGetWidth(self.view.frame) : self.contentViewInPortraitOffsetCenterX + CGRectGetWidth(self.view.frame)), self.contentViewContainer.center.y);
+            } else {
+                self.contentViewContainer.center = CGPointMake((UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation]) ? self.contentViewInLandscapeOffsetCenterX + CGRectGetHeight(self.view.frame) : self.contentViewInPortraitOffsetCenterX + CGRectGetWidth(self.view.frame)), self.contentViewContainer.center.y);
+            }
+            
+            self.menuViewContainer.alpha = !self.fadeMenuView ?: 1.0f;
+            self.contentViewContainer.alpha = self.contentViewFadeOutAlpha;
+            self.menuViewContainer.transform = CGAffineTransformIdentity;
+            if (self.scaleBackgroundImageView)
+                self.backgroundImageView.transform = CGAffineTransformIdentity;
+            
+        } completion:^(BOOL finished) {
+            [self addContentViewControllerMotionEffects];
+            [self.leftMenuViewController endAppearanceTransition];
+            
+            if (!self.visible && [self.delegate conformsToProtocol:@protocol(RESideMenuDelegate)] && [self.delegate respondsToSelector:@selector(sideMenu:didShowMenuViewController:)]) {
+                [self.delegate sideMenu:self didShowMenuViewController:self.leftMenuViewController];
+            }
+            
+            self.visible = YES;
+            self.leftMenuVisible = YES;
+        }];
+
+    }
     
     [self statusBarNeedsAppearanceUpdate];
 }
@@ -689,7 +694,7 @@
                     [self hideMenuViewController];
                 } else {
                     if (self.leftMenuViewController) {
-                        [self showLeftMenuViewController];
+                        [self showLeftMenuViewController:YES];
                     }
                 }
             } else {
