@@ -317,6 +317,37 @@
         }];
 
     }
+    else{
+    
+        if (self.scaleContentView) {
+            self.contentViewContainer.transform = CGAffineTransformMakeScale(self.contentViewScaleValue, self.contentViewScaleValue);
+        } else {
+            self.contentViewContainer.transform = CGAffineTransformIdentity;
+        }
+
+        if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_7_1) {
+            self.contentViewContainer.center = CGPointMake((UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation]) ? self.contentViewInLandscapeOffsetCenterX + CGRectGetWidth(self.view.frame) : self.contentViewInPortraitOffsetCenterX + CGRectGetWidth(self.view.frame)), self.contentViewContainer.center.y);
+        } else {
+            self.contentViewContainer.center = CGPointMake((UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation]) ? self.contentViewInLandscapeOffsetCenterX + CGRectGetHeight(self.view.frame) : self.contentViewInPortraitOffsetCenterX + CGRectGetWidth(self.view.frame)), self.contentViewContainer.center.y);
+        }
+        
+        self.menuViewContainer.alpha = !self.fadeMenuView ?: 1.0f;
+        self.contentViewContainer.alpha = self.contentViewFadeOutAlpha;
+        self.menuViewContainer.transform = CGAffineTransformIdentity;
+        if (self.scaleBackgroundImageView)
+            self.backgroundImageView.transform = CGAffineTransformIdentity;
+        
+        [self addContentViewControllerMotionEffects];
+        [self.leftMenuViewController endAppearanceTransition];
+        
+        if (!self.visible && [self.delegate conformsToProtocol:@protocol(RESideMenuDelegate)] && [self.delegate respondsToSelector:@selector(sideMenu:didShowMenuViewController:)]) {
+            [self.delegate sideMenu:self didShowMenuViewController:self.leftMenuViewController];
+        }
+        
+        self.visible = YES;
+        self.leftMenuVisible = YES;
+
+    }
     
     [self statusBarNeedsAppearanceUpdate];
 }
